@@ -1,0 +1,10 @@
+{
+  "parser": "babel-eslint",
+  "plugins": [
+    "react"
+  ],
+  "extends": ["standard", "standard-react"],
+  "rules": {
+    "react/prop-types": [0]
+  }
+}
