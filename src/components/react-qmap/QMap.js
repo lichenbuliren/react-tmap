@@ -93,7 +93,6 @@ class QQMap extends BaseComponent {
     const options = this.getOptions(this.options)
     options.center = pointToLatLng(options.center)
     this.map = new qq.maps.Map(this.mapNode, options)
-    console.log(this.map)
     this.bindEvent(this.map, this.events)
   }
 
@@ -121,7 +120,7 @@ class QQMap extends BaseComponent {
     const { style } = this.props
     return (
       <div className='qmap-container' style={style}>
-        <div ref={node => (this.mapNode = node)} className={this.props.className} >
+        <div ref={node => (this.mapNode = node)} className={this.props.className} style={{height: '100%', width: '100%'}}>
           加载地图中...
           {this.renderChildren()}
           {this.onRender()}

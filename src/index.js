@@ -1,3 +1,1 @@
-import * as QMap from './components'
-
-export default QMap
+export * from './components'
