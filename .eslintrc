@@ -1,9 +1,11 @@
 {
   "parser": "babel-eslint",
-  "plugins": [
-    "react"
-  ],
   "extends": ["standard", "standard-react"],
+  "parserOptions": {
+    "sourceType": "module",
+    "allowImportExportEverywhere": false,
+    "codeFrame": false
+  },
   "rules": {
     "react/prop-types": [0]
   }

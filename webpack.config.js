@@ -9,7 +9,9 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].mim.js'
+    filename: 'qmap.min.js',
+    libraryTarget: 'umd',
+    library: 'qmap'
   },
   module: {
     rules: [{
@@ -26,7 +28,10 @@ module.exports = {
       'node_modules',
       srcPath
     ],
-    extensions: ['.jsx']
+    extensions: ['.jsx', '.js']
+  },
+  externals: {
+    qq: 'window.qq'
   },
   plugins: [
     new UglifyPlugin()
