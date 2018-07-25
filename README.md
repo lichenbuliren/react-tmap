@@ -6,14 +6,16 @@
 
 ## 支持组件列表
 
-- QMap 根组件
-- Marker 标记组件
-- MarkerList 标记列表
-- Polygon 多边形
-- Circle 圆形
-- Heatmap 热力图
-- Info 提示层
-- Polyline 折线
+- [QMap 地图组件](#user-content-qmap-地图组件)
+- [Marker 标记组件](#user-content-marker-标记组件)
+- [MarkerList 标记列表](#user-content-markerlist-标记组件)
+- [Polygon 多边形](#user-content-polygon-多边形)
+- [Circle 圆形](#user-content-circle-圆形)
+- [Heatmap 热力图](#user-content-heatmap-热力图)
+- [Info 提示层](#user-content-info-提示层)
+- [Polyline 折线](#user-content-polyline-折线)
+- [自定义控件](#user-content-自定义控件)
+- [网格热力图](#user-content-网格热力图)
 
 ## 基本用法
 
@@ -52,7 +54,7 @@
 
 ### Marker 标记组件
 
-``` react
+``` jsx
 <Marker
   position={{lat: xxx, lng: xxx}}
   draggable={true}
@@ -68,7 +70,7 @@
 
 ### MarkerList 标记列表
 
-``` react
+``` jsx
 <MarkerList
   showDecoration
   animation={config.ANIMATION_DROP}
@@ -81,7 +83,7 @@
 
 ### Info 提示弹层组件
 
-``` react
+``` jsx
 <Info
   content={content}
   visible={showInfo}
@@ -94,7 +96,7 @@
 
 ### Polygon 多边形
 
-``` react
+``` jsx
 <Polygon
   fillColor={fillColor}
   points={polygonPoints}
@@ -112,7 +114,7 @@
 
 ### Circle 圆形
 
-``` react
+``` jsx
 <Circle
   center={center}
   radius={radius}
@@ -127,13 +129,21 @@
 
 ### Heatmap 热力图
 
-``` react
+``` jsx
+const heatMapData = {
+  max: 100,
+  data: [{
+    lat: xxx,
+    lng: xxx,
+    count: 1000
+  }, ...]
+}
 <HeatMap heatData={heatMapData} options={heatMapOptions} />
 ```
 
 ### 自定义控件
 
-``` react
+``` jsx
 import React from 'react'
 import { ControlPosition, Control } from 'qmap'
 
@@ -160,7 +170,75 @@ export default class CustomControl extends Control {
 
 ```
 
+### 网格热力图
 
+``` jsx
+import { QMap, GridHeatmap } from 'qmap'
+// 基础配置
+const gridOptions = {
+  zIndex: 2,
+  fillStyle: 'rgba(55, 50, 250, 1)',
+  shadowColor: 'rgba(255, 250, 50, 0.3)',
+  shadowBlur: 20,
+  // 网格规格
+  size: 100,
+  // 网格宽度，优先取宽度
+  width: 93,
+  // 网格高度
+  height: 101,
+  // 绘制单位
+  unit: 'm',
+  // 全局网格透明度
+  globalAlpha: 0.8,
+  // 文案绘制配置
+  label: {
+    show: true,
+    fillStyle: 'white',
+    shadowColor: 'white',
+    font: '12px Arial',
+    shadowBlur: 10
+  },
+  // 渐变色阶
+  gradient: {
+    0.16: '#ADD7FF',
+    0.32: '#87C1FF',
+    0.48: '#60A8FF',
+    0.64: '#338BFF',
+    0.78: '#0752C9',
+    1.0: '#0E3CA1'
+  }
+}
+
+// 在地图 `idle` 事件回调中创建网格热力图
+handleMapIdle = map => {
+  console.log('map idle')
+  const { gridOptions } = this.state
+  const dataSet = heatData.map((point, i) => ({
+    geometry: {
+      type: 'Point',
+      coordinates: [parseFloat(point.lng.toFixed(4)), parseFloat(point.lat.toFixed(4))]
+    },
+    count: heatData[i].cnt
+  }))
+
+  const max = Math.max(...heatData.map(item => item.cnt))
+  this.map = map
+  gridOptions.max = max
+  this.gridHeatmap = new GridHeatmap(map, dataSet, gridOptions)
+}
+
+<QMap
+  center={{
+    lat: 22.54073,
+    lng: 113.933571
+  }}
+  style={{ height: '1000px' }}
+  zoom={zoom}
+  events={{
+    idle: this.handleMapIdle
+  }}
+>
+```
 
 ### 参考资料
 
@@ -168,6 +246,4 @@ export default class CustomControl extends Control {
 - [腾讯地图 API](http://lbs.qq.com/javascript_v2/index.html)
 
 ## TODOS
-
-- 网格热力图实现
 - 其他基础地图组件实现

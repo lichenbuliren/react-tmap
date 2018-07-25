@@ -81,6 +81,8 @@ Intensity.prototype.getImageData = function (value) {
     value = min
   }
 
+  // Math.floor((value - min) / (max - min) * (256 - 1)) 获取当前值占比整个 canvas 长度的比例
+  // 1 像素 = 4 个数组元素 r,g,b,a 组成，所以这里乘以 4
   var index = Math.floor((value - min) / (max - min) * (256 - 1)) * 4
 
   return [imageData[index], imageData[index + 1], imageData[index + 2], imageData[index + 3]]
