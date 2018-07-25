@@ -22,6 +22,7 @@ module.exports = {
       use: 'babel-loader'
     }]
   },
+  devtool: 'source-map',
   // 代码模块解析路径配置
   resolve: {
     modules: [

@@ -2,7 +2,7 @@
   "name": "qmap",
   "version": "1.0.0",
   "description": "腾讯地图 React 实现",
-  "main": "/dist/qmap.min.js",
+  "main": "dist/qmap.min.js",
   "scripts": {
     "build": "webpack --mode production",
     "watch": "webpack --mode production -w",
@@ -45,6 +45,7 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
+    "extend": "^3.0.2",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"
   }

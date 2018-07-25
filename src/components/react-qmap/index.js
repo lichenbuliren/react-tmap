@@ -10,6 +10,7 @@ import Control from './Control'
 import ControlPosition from './ControlPosition'
 import * as utils from './utils'
 import * as config from './constants'
+import { GridHeatmap } from './plugins'
 
 export {
   QMap,
@@ -23,5 +24,6 @@ export {
   Polygon,
   Circle,
   Control,
+  GridHeatmap,
   ControlPosition
 }

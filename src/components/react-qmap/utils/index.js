@@ -116,6 +116,18 @@ const getPolygonAreaCenter = (points) => {
   return { x, y }
 }
 
+const getMapSize = map => {
+  var mapContainer = map.container
+  return {
+    width: mapContainer.clientWidth,
+    height: mapContainer.clientHeight
+  }
+}
+
+const clear = context => {
+  context && context.clearRect && context.clearRect(0, 0, context.canvas.width, context.canvas.height)
+}
+
 export {
   getAddressByLatLng,
   convertorPointsToPath,
@@ -125,5 +137,7 @@ export {
   hasNoneCrossingLinePolygonal,
   getCrossingPolygonal,
   isCrossingPolygonal,
-  getPolygonAreaCenter
+  getPolygonAreaCenter,
+  getMapSize,
+  clear
 }

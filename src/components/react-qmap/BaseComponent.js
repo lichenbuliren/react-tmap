@@ -11,7 +11,7 @@ export default class BaseComponent extends React.Component {
     const self = this
     if (events.length) {
       events.forEach(event => {
-        if (Object.prototype.toString.call(event) === '[Object Array]' && event[1]) {
+        if (Object.prototype.toString.call(event) === '[object Array]' && event[1]) {
           // 绑定一次事件
           const eventName = event[0]
           qq.maps.event.addListenerOnce(obj, eventName, mouseEvent => {

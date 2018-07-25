@@ -1,5 +1,5 @@
-import GridHeatMap from './GridHeatMap'
+import GridHeatmap from './gird-heatmap'
 
 export {
-  GridHeatMap
+  GridHeatmap
 }
