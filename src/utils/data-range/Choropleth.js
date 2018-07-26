@@ -63,7 +63,7 @@ Choropleth.prototype.generateByDataSet = function (dataSet, gradient) {
  */
 Choropleth.prototype.generateByMinMax = function (min, max, gradient) {
   var colors = gradient || defaultGradient
-  var splitNum = Number((max - min) / colors.length)
+  var splitNum = Number(Math.ceil((max - min) / colors.length))
   max = Number(max)
   var index = Number(min)
   this.splitList = []

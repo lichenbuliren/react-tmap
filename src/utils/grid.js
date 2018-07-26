@@ -1,6 +1,25 @@
 import Intensity from './data-range/Intensity'
 import DataSet from '../data/DataSet'
 
+const getMaxAndMinCountByGrids = grids => {
+  let max = 0
+  let min = 0
+  Object.keys(grids).forEach((key, i) => {
+    const count = grids[key]
+    if (count > max) max = count
+    if (i > 0) {
+      if (count < min) min = count
+    } else {
+      min = grids[key]
+    }
+  })
+
+  return {
+    min,
+    max
+  }
+}
+
 export default {
   draw: function (context, dataSet, options) {
     context.save()
@@ -11,9 +30,8 @@ export default {
     const _width = options._width
     const _height = options._height
     // 如果有配置 width,height 项，则优先取 width,height
-    const xScale = _width || size
-    const yScale = _height || size
-
+    let xScale = _width || size
+    let yScale = _height || size
     const offset = options.offset || {
       x: 0,
       y: 0
@@ -23,8 +41,11 @@ export default {
       const coordinates = data[i].geometry._coordinates || data[i].geometry.coordinates
       let coordX = (coordinates[0] - offset.x) / xScale
       let coordY = (coordinates[1] - offset.y) / yScale
-      coordX = parseFloat(coordX.toFixed(4))
-      coordY = parseFloat(coordY.toFixed(4))
+      if (options.unit !== 'm') {
+        yScale = size
+        xScale = size
+      }
+
       const gridKey = coordX + ',' + coordY
       if (!grids[gridKey]) {
         grids[gridKey] = 0
@@ -32,10 +53,14 @@ export default {
       grids[gridKey] += ~~(data[i].count || 1)
     }
 
+    const curMaxAndMin = getMaxAndMinCountByGrids(grids)
     const intensity = new Intensity({
-      max: options.max || 100,
+      max: curMaxAndMin.max,
+      min: curMaxAndMin.min,
       gradient: options.gradient
     })
+
+    choropleth.generateByMinMax(curMaxAndMin.min, curMaxAndMin.max, options.gradient)
 
     for (let gridKey in grids) {
       gridKey = gridKey.split(',')
@@ -71,7 +96,7 @@ export default {
         if (Object.prototype.toString.call(color) === '[object Array]' && color.length === 2) {
           context.fillStyle = color[1]
         }
-        var textWidth = context.measureText(text).width
+        const textWidth = context.measureText(text).width
         context.fillText(text, gridKey[0] * xScale + offset.x - textWidth / 2, gridKey[1] * yScale + offset.y + 5)
       }
     }

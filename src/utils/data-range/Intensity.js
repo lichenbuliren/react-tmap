@@ -46,7 +46,9 @@ Intensity.prototype.initPalette = function () {
 
   gradient.forEach(item => {
     let stopColor = item.color
-    if (Object.prototype.toString.call(stopColor) === '[object Array]') stopColor = stopColor[0]
+    if (Object.prototype.toString.call(stopColor) === '[object Array]') {
+      stopColor = stopColor[0]
+    }
 
     lineGradient.addColorStop(parseFloat(item.key), stopColor)
   })
@@ -122,6 +124,7 @@ Intensity.prototype.getLegend = function (options) {
 
   var lineGradient = paletteCtx.createLinearGradient(0, height, 0, 0)
 
+  console.log(gradient)
   for (var key in gradient) {
     lineGradient.addColorStop(parseFloat(key), gradient[key])
   }

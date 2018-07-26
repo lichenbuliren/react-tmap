@@ -8,7 +8,7 @@ import _extend from 'extend'
 
 class GridHeatmap extends BaseLayer {
   constructor (map, data, options) {
-    options = _extend(true, {}, options, { gradient, unit: 'm' })
+    options = _extend(true, {}, { gradient, unit: 'm' }, options)
     const dataSet = new DataSet(data)
     super(map, dataSet, options)
     this.init(options)
@@ -111,16 +111,26 @@ class GridHeatmap extends BaseLayer {
       fromColumn: 'coordinates',
       transferCoordinate: function (coordinate) {
         const pixel = layerProjection.fromLatLngToDivPixel(new qq.maps.LatLng(coordinate[1], coordinate[0]))
+        const point = {
+          x: (pixel.x - layerOffset.x) / zoomUnit,
+          y: (pixel.y - layerOffset.y) / zoomUnit
+        }
         // 这里偏移网格大小的一半
-        return [pixel.x - layerOffset.x, pixel.y - layerOffset.y]
+        return [point.x, point.y]
       }
     }
 
     const data = this.dataSet.get(dataGetOptions)
-    this.drawContext(context, data, this.options, {
-      x: parseFloat(layerOffset.x.toFixed(4)),
-      y: parseFloat(layerOffset.y.toFixed(4))
-    })
+
+    const latLng = new qq.maps.LatLng(0, 0)
+    const worldPoint = layerProjection.fromLatLngToDivPixel(latLng)
+    const offset = {
+      x: (worldPoint.x - layerOffset.x) / zoomUnit,
+      y: (worldPoint.y - layerOffset.y) / zoomUnit
+    }
+    console.log(offset)
+
+    this.drawContext(context, data, this.options, offset)
   }
 
   init (options) {
