@@ -8,7 +8,7 @@ import _extend from 'extend'
 
 class GridHeatmap extends BaseLayer {
   constructor (map, data, options) {
-    options = _extend(true, {}, options, { gradient })
+    options = _extend(true, {}, options, { gradient, unit: 'm' })
     const dataSet = new DataSet(data)
     super(map, dataSet, options)
     this.init(options)
