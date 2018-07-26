@@ -11,12 +11,7 @@ import Canvas from '../Canvas'
  */
 function Intensity (options) {
   options = options || {}
-  this.gradient = options.gradient || {
-    0.25: 'rgba(0, 0, 255, 1)',
-    0.55: 'rgba(0, 255, 0, 1)',
-    0.85: 'rgba(255, 255, 0, 1)',
-    1.0: 'rgba(255, 0, 0, 1)'
-  }
+  this.gradient = options.gradient
   this.maxSize = options.maxSize || 35
   this.minSize = options.minSize || 0
   this.max = options.max || 100
@@ -49,9 +44,12 @@ Intensity.prototype.initPalette = function () {
 
   var lineGradient = paletteCtx.createLinearGradient(0, 0, 256, 1)
 
-  for (var key in gradient) {
-    lineGradient.addColorStop(parseFloat(key), gradient[key])
-  }
+  gradient.forEach(item => {
+    let stopColor = item.color
+    if (Object.prototype.toString.call(stopColor) === '[object Array]') stopColor = stopColor[0]
+
+    lineGradient.addColorStop(parseFloat(item.key), stopColor)
+  })
 
   paletteCtx.fillStyle = lineGradient
   paletteCtx.fillRect(0, 0, 256, 1)
@@ -59,7 +57,6 @@ Intensity.prototype.initPalette = function () {
 
 Intensity.prototype.getColor = function (value) {
   var imageData = this.getImageData(value)
-
   return 'rgba(' + imageData[0] + ', ' + imageData[1] + ', ' + imageData[2] + ', ' + imageData[3] / 256 + ')'
 }
 
@@ -133,6 +130,14 @@ Intensity.prototype.getLegend = function (options) {
   paletteCtx.fillRect(0, 0, width, height)
 
   return canvas
+}
+
+Intensity.prototype.getTextColor = function (splitList, count) {
+  return splitList.find(split => {
+    if (count >= split.start & count <= split.end) {
+      return split.value
+    }
+  })
 }
 
 export default Intensity

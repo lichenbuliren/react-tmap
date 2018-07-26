@@ -1,7 +1,9 @@
+/* eslint-disable */
+import { gradient as defaultGradient } from '../../config'
 /**
  * @author kyle / http://nikai.us/
  */
-/* eslint-disable */
+
 /**
  * Choropleth
  * @param {Object} splitList:
@@ -48,21 +50,20 @@ Choropleth.prototype.get = function (count) {
 /**
  * 根据DataSet自动生成对应的splitList
  */
-Choropleth.prototype.generateByDataSet = function (dataSet) {
-
+Choropleth.prototype.generateByDataSet = function (dataSet, gradient) {
   var min = dataSet.getMin('count')
   var max = dataSet.getMax('count')
 
-  this.generateByMinMax(min, max)
+  this.generateByMinMax(min, max, gradient)
 }
 
 /**
- * 根据DataSet自动生成对应的splitList
+ * 根据渐变规则
+ * 自动生成对应的 splitList
  */
-Choropleth.prototype.generateByMinMax = function (min, max) {
-  var colors = ['rgba(255, 255, 0, 0.8)', 'rgba(253, 98, 104, 0.8)', 'rgba(255, 146, 149, 0.8)', 'rgba(255, 241, 193, 0.8)', 'rgba(110, 176, 253, 0.8)', 'rgba(52, 139, 251, 0.8)', 'rgba(17, 102, 252, 0.8)']
-  var splitNum = Number((max - min) / 7)
-  // console.log(splitNum)
+Choropleth.prototype.generateByMinMax = function (min, max, gradient) {
+  var colors = gradient || defaultGradient
+  var splitNum = Number((max - min) / colors.length)
   max = Number(max)
   var index = Number(min)
   this.splitList = []
@@ -76,9 +77,7 @@ Choropleth.prototype.generateByMinMax = function (min, max) {
     })
     count++
     index += splitNum
-    // console.log(index, max)
   }
-  // console.log('splitNum')
 }
 
 Choropleth.prototype.getLegend = function (options) {

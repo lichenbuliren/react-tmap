@@ -3,9 +3,12 @@ import BaseLayer from './BaseLayer'
 import CanvasLayer from './CanvasLayer'
 import { clear } from '../../utils'
 import DataSet from '../../data/DataSet'
+import { gradient } from '../../config'
+import _extend from 'extend'
 
 class GridHeatmap extends BaseLayer {
-  constructor (map, data, options = {}) {
+  constructor (map, data, options) {
+    options = _extend(true, {}, options, { gradient })
     const dataSet = new DataSet(data)
     super(map, dataSet, options)
     this.init(options)
@@ -80,6 +83,7 @@ class GridHeatmap extends BaseLayer {
     clear(context)
 
     if (this.context === '2d') {
+      // 配置全局 canvas 上下文参数
       for (let key in this.options) {
         context[key] = this.options[key]
       }
@@ -123,6 +127,9 @@ class GridHeatmap extends BaseLayer {
     this.options = options
     // 调用父类方法，得到颜色分割区间
     this.initDataRange(options)
+    // 颜色配置区间
+    this.options.choropleth = this.choropleth
+    this.options.category = this.category
     // 设置 canvas 绘制上下文
     this.context = this.options.context || '2d'
 
