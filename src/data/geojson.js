@@ -2,6 +2,7 @@
  * @author kyle / http://nikai.us/
  */
 
+/* eslint-disable */
 import DataSet from "./DataSet";
 
 export default {

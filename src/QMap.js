@@ -2,7 +2,7 @@
 import React from 'react'
 import BaseComponent from './BaseComponent'
 import PropTypes from 'prop-types'
-import { pointToLatLng } from './utils/'
+import { pointToLatLng } from './utils'
 
 class QQMap extends BaseComponent {
   static defaultProps = {

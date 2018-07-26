@@ -19,7 +19,19 @@ module.exports = {
       include: [
         srcPath
       ],
-      use: 'babel-loader'
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: [
+            '@babel/preset-env',
+            '@babel/preset-react'
+          ],
+          plugins: [
+            require('@babel/plugin-proposal-object-rest-spread'),
+            require('@babel/plugin-proposal-class-properties')
+          ]
+        }
+      }
     }]
   },
   devtool: 'source-map',
@@ -32,7 +44,13 @@ module.exports = {
     extensions: ['.jsx', '.js']
   },
   externals: {
-    qq: 'window.qq'
+    qq: 'window.qq',
+    react: {
+      commonjs: 'react',
+      commonjs2: 'react',
+      amd: 'react',
+      root: 'React'
+    }
   },
   plugins: [
     new UglifyPlugin()

@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @author kyle / http://nikai.us/
  */
@@ -113,3 +114,4 @@ export default {
 
     }
 }
+/* eslint-enable */
