@@ -1,29 +1,42 @@
-/* global qq */
-import BaseLayer from './BaseLayer'
+/**
+ * @author kyle / http://nikai.us/
+ */
+
+import BaseLayer from '../BaseLayer'
 import CanvasLayer from './CanvasLayer'
-import { clear } from '../../utils'
+import clear from '../../canvas/clear'
 import DataSet from '../../data/DataSet'
-import { gradient } from '../../config'
 import _extend from 'extend'
+import { gradient } from '../../config'
 
-class GridHeatmap extends BaseLayer {
-  constructor (map, data, options) {
+class Layer extends BaseLayer {
+  constructor (map, dataSet, options) {
     options = _extend(true, {}, { gradient, unit: 'm' }, options)
-    const dataSet = new DataSet(data)
     super(map, dataSet, options)
-    this.init(options)
-    const canvasLayer = this.canvasLayer = new CanvasLayer(map, {
-      context: this.context,
-      paneName: options.paneName,
-      mixBlendMode: options.mixBlendMode,
-      enableMassClear: options.enableMassClear,
-      zIndex: options.zIndex,
-      update: () => this._canvasUpdate()
-    })
+    var self = this
+    options = options || {}
 
-    dataSet.on('change', function () {
-      canvasLayer.draw()
-    })
+    self.init(options)
+    self.argCheck(options)
+
+    var canvasLayerOptions = {
+      map: map,
+      animate: false,
+      updateHandler: function () {
+        console.log('update handler')
+        self._canvasUpdate()
+      },
+      resolutionScale: 1
+    }
+
+    const canvasLayer = this.canvasLayer = new CanvasLayer(canvasLayerOptions)
+
+    // dataSet.on('change', function () {
+    //   canvasLayer.draw()
+    // })
+    this.clickEvent = this.clickEvent.bind(this)
+    this.mousemoveEvent = this.mousemoveEvent.bind(this)
+    this.bindEvent()
   }
 
   clickEvent (e) {
@@ -37,24 +50,28 @@ class GridHeatmap extends BaseLayer {
   }
 
   bindEvent (e) {
-    this.unbindEvent()
+    var map = this.map
+
     if (this.options.methods) {
       if (this.options.methods.click) {
-        this.clickMapHandler = qq.maps.event.addListener(this.map, 'click', this.clickEvent)
+        map.setDefaultCursor('default')
+        map.addListener('click', this.clickEvent)
       }
       if (this.options.methods.mousemove) {
-        this.mouseMoveMapHandler = qq.maps.event.addListener(this.map, 'mousemove', this.mousemoveEvent)
+        map.addListener('mousemove', this.mousemoveEvent)
       }
     }
   }
 
   unbindEvent (e) {
+    var map = this.map
+
     if (this.options.methods) {
       if (this.options.methods.click) {
-        qq.maps.event.removeListener(this.clickMapHandler)
+        map.removeListener('click', this.clickEvent)
       }
       if (this.options.methods.mousemove) {
-        qq.maps.event.removeListener(this.mouseMoveMapHandler)
+        map.removeListener('mousemove', this.mousemoveEvent)
       }
     }
   }
@@ -63,109 +80,137 @@ class GridHeatmap extends BaseLayer {
     return this.canvasLayer.canvas.getContext(this.context)
   }
 
-  _canvasUpdate () {
-    const map = this.map
-    const projection = map.getProjection()
-    if (!this.canvasLayer || !projection) {
+  _canvasUpdate (time) {
+    if (!this.canvasLayer) {
       return
     }
-    const bounds = map.getBounds()
-    const topLeft = new qq.maps.LatLng(
-      bounds.getNorthEast().getLat(),
-      bounds.getSouthWest().getLng()
-    )
-    const zoom = map.getZoom()
-    // 计算缩放级别
-    const zoomUnit = Math.pow(2, 17 - zoom)
-    const layerProjection = this.canvasLayer.getProjection()
-    const layerOffset = layerProjection.fromLatLngToDivPixel(topLeft)
-    const context = this.getContext()
-    clear(context)
 
-    if (this.context === '2d') {
-      // 配置全局 canvas 上下文参数
-      for (let key in this.options) {
-        context[key] = this.options[key]
+    var self = this
+
+    var animationOptions = self.options.animation
+
+    var context = this.getContext()
+
+    if (self.isEnabledTime()) {
+      if (time === undefined) {
+        clear(context)
+        return
+      }
+      if (this.context == '2d') {
+        context.save()
+        context.globalCompositeOperation = 'destination-out'
+        context.fillStyle = 'rgba(0, 0, 0, .1)'
+        context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+        context.restore()
+      }
+    } else {
+      clear(context)
+    }
+
+    if (this.context == '2d') {
+      for (var key in self.options) {
+        context[key] = self.options[key]
       }
     } else {
       context.clear(context.COLOR_BUFFER_BIT)
     }
 
-    if ((this.options.minZoom && map.getZoom() < this.options.minZoom) || (this.options.maxZoom && map.getZoom() > this.options.maxZoom)) {
+    if (
+      (self.options.minZoom && map.getZoom() < self.options.minZoom) ||
+      (self.options.maxZoom && map.getZoom() > self.options.maxZoom)
+    ) {
       return
     }
-    // get data from data set
-    if (this.options.unit === 'm') {
-      if (this.options.size) {
-        this.options._size = this.options.size / zoomUnit
-        this.options._height = this.options.height / zoomUnit
-        this.options._width = this.options.width / zoomUnit
-      }
-    } else {
-      this.options._size = this.options.size
-      this.options._height = this.options.height
-      this.options._width = this.options.width
+
+    var scale = 1
+    if (this.context != '2d') {
+      scale = this.canvasLayer.devicePixelRatio
     }
 
-    const dataGetOptions = {
-      fromColumn: 'coordinates',
+    var map = this.map
+    var mapProjection = map.getProjection()
+    var scale = Math.pow(2, map.zoom) * resolutionScale
+    console.log('scale', scale)
+    var offset = mapProjection.fromLatLngToPoint(this.canvasLayer.getTopLeft())
+    var dataGetOptions = {
+      // fromColumn: self.options.coordType == 'bd09mc' ? 'coordinates' : 'coordinates_mercator',
       transferCoordinate: function (coordinate) {
-        const pixel = layerProjection.fromLatLngToDivPixel(new qq.maps.LatLng(coordinate[1], coordinate[0]))
-        const point = {
-          x: (pixel.x - layerOffset.x) / zoomUnit,
-          y: (pixel.y - layerOffset.y) / zoomUnit
+        var latLng = new qq.maps.LatLng(coordinate[1], coordinate[0])
+        var worldPoint = mapProjection.fromLatLngToPoint(latLng)
+        var pixel = {
+          x: (worldPoint.x - offset.x) * scale,
+          y: (worldPoint.y - offset.y) * scale
         }
-        // 这里偏移网格大小的一半
-        return [point.x, point.y]
+        return [pixel.x, pixel.y]
       }
     }
 
-    const data = this.dataSet.get(dataGetOptions)
-
-    const latLng = new qq.maps.LatLng(0, 0)
-    const worldPoint = layerProjection.fromLatLngToDivPixel(latLng)
-    const offset = {
-      x: (worldPoint.x - layerOffset.x) / zoomUnit,
-      y: (worldPoint.y - layerOffset.y) / zoomUnit
+    if (time !== undefined) {
+      dataGetOptions.filter = function (item) {
+        var trails = animationOptions.trails || 10
+        if (time && item.time > time - trails && item.time < time) {
+          return true
+        } else {
+          return false
+        }
+      }
     }
-    console.log(offset)
 
-    this.drawContext(context, data, this.options, offset)
+    // get data from data set
+    var data = self.dataSet.get(dataGetOptions)
+
+    this.processData(data)
+
+    var latLng = new qq.maps.LatLng(0, 0)
+    var worldPoint = mapProjection.fromLatLngToPoint(latLng)
+    var pixel = {
+      x: (worldPoint.x - offset.x) * scale,
+      y: (worldPoint.y - offset.y) * scale
+    }
+
+    if (self.options.unit == 'm' && self.options.size) {
+      self.options._size = self.options.size / zoomUnit
+    } else {
+      self.options._size = self.options.size
+    }
+
+    this.drawContext(context, new DataSet(data), self.options, pixel)
+
+    self.options.updateCallback && self.options.updateCallback(time)
   }
 
   init (options) {
-    this.options = options
-    // 调用父类方法，得到颜色分割区间
+    var self = this
+
+    self.options = options
+
     this.initDataRange(options)
-    // 颜色配置区间
-    this.options.choropleth = this.choropleth
-    this.options.category = this.category
-    // 设置 canvas 绘制上下文
-    this.context = this.options.context || '2d'
 
-    if (this.options.zIndex) {
-      this.canvasLayer && this.canvasLayer.setZIndex(this.options.zIndex)
+    this.context = self.options.context || '2d'
+
+    if (self.options.zIndex) {
+      this.canvasLayer && this.canvasLayer.setZIndex(self.options.zIndex)
     }
 
-    if (this.options.max) {
-      this.intensity.setMax(this.options.max)
-    }
-
-    if (this.options.min) {
-      this.intensity.setMin(this.options.min)
-    }
-
-    this.bindEvent()
+    this.initAnimator()
   }
 
   addAnimatorEvent () {
-    qq.maps.event.addListener(this.map, 'movestart', this.animatorMovestartEvent.bind(this))
-    qq.maps.event.addListener(this.map, 'moveend', this.animatorMoveendEvent.bind(this))
+    this.map.addListener('movestart', this.animatorMovestartEvent.bind(this))
+    this.map.addListener('moveend', this.animatorMoveendEvent.bind(this))
+  }
+
+  show () {
+    this.map.addOverlay(this.canvasLayer)
+  }
+
+  hide () {
+    this.map.removeOverlay(this.canvasLayer)
   }
 
   draw () {
-    this.canvasLayer.draw()
+    self.canvasLayer.draw()
   }
 }
 
-export default GridHeatmap
+export default Layer
