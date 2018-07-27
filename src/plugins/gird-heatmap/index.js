@@ -11,18 +11,15 @@ class GridHeatmap extends BaseLayer {
     options = _extend(true, {}, { gradient, unit: 'm' }, options)
     const dataSet = new DataSet(data)
     super(map, dataSet, options)
+    // 记录当前在可是区域内的网格数
+    this.inViewPortCount = 0
     this.init(options)
-    const canvasLayer = this.canvasLayer = new CanvasLayer(map, {
+    this._zoom = map.getZoom()
+    this.canvasLayer = new CanvasLayer(map, {
       context: this.context,
       paneName: options.paneName,
-      mixBlendMode: options.mixBlendMode,
-      enableMassClear: options.enableMassClear,
       zIndex: options.zIndex,
       update: () => this._canvasUpdate()
-    })
-
-    dataSet.on('change', function () {
-      canvasLayer.draw()
     })
   }
 
@@ -75,13 +72,29 @@ class GridHeatmap extends BaseLayer {
       bounds.getSouthWest().getLng()
     )
     const zoom = map.getZoom()
-    // 计算缩放级别
+    const context = this.getContext()
     const zoomUnit = Math.pow(2, 17 - zoom)
     const layerProjection = this.canvasLayer.getProjection()
     const layerOffset = layerProjection.fromLatLngToDivPixel(topLeft)
-    const context = this.getContext()
-    clear(context)
+    const dataGetOptions = {
+      fromColumn: 'coordinates',
+      filter: item => {
+        const { geometry: { coordinates } } = item
+        const point = new qq.maps.LatLng(coordinates[1], coordinates[0])
+        return bounds.contains(point)
+      },
+      transferCoordinate: function (coordinate) {
+        const pixel = layerProjection.fromLatLngToDivPixel(new qq.maps.LatLng(coordinate[1], coordinate[0]))
+        const point = {
+          x: pixel.x - layerOffset.x,
+          y: pixel.y - layerOffset.y
+        }
+        // 这里偏移网格大小的一半
+        return [point.x, point.y]
+      }
+    }
 
+    const data = this.dataSet.get(dataGetOptions)
     if (this.context === '2d') {
       // 配置全局 canvas 上下文参数
       for (let key in this.options) {
@@ -91,6 +104,7 @@ class GridHeatmap extends BaseLayer {
       context.clear(context.COLOR_BUFFER_BIT)
     }
 
+    // 计算缩放级别
     if ((this.options.minZoom && map.getZoom() < this.options.minZoom) || (this.options.maxZoom && map.getZoom() > this.options.maxZoom)) {
       return
     }
@@ -106,31 +120,14 @@ class GridHeatmap extends BaseLayer {
       this.options._height = this.options.height
       this.options._width = this.options.width
     }
+    this.options.zoom = zoom
 
-    const dataGetOptions = {
-      fromColumn: 'coordinates',
-      transferCoordinate: function (coordinate) {
-        const pixel = layerProjection.fromLatLngToDivPixel(new qq.maps.LatLng(coordinate[1], coordinate[0]))
-        const point = {
-          x: (pixel.x - layerOffset.x) / zoomUnit,
-          y: (pixel.y - layerOffset.y) / zoomUnit
-        }
-        // 这里偏移网格大小的一半
-        return [point.x, point.y]
-      }
-    }
+    clear(context)
 
-    const data = this.dataSet.get(dataGetOptions)
-
-    const latLng = new qq.maps.LatLng(0, 0)
-    const worldPoint = layerProjection.fromLatLngToDivPixel(latLng)
-    const offset = {
-      x: (worldPoint.x - layerOffset.x) / zoomUnit,
-      y: (worldPoint.y - layerOffset.y) / zoomUnit
-    }
-    console.log(offset)
-
-    this.drawContext(context, data, this.options, offset)
+    this.drawContext(context, data, this.options, {
+      x: parseFloat(layerOffset.x.toFixed(4)),
+      y: parseFloat(layerOffset.y.toFixed(4))
+    })
   }
 
   init (options) {

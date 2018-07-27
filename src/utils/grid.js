@@ -1,5 +1,6 @@
 import Intensity from './data-range/Intensity'
 import DataSet from '../data/DataSet'
+import { toFixedNumber } from './index'
 
 const getMaxAndMinCountByGrids = grids => {
   let max = 0
@@ -26,6 +27,7 @@ export default {
     const grids = {}
     const data = dataSet instanceof DataSet ? dataSet.get() : dataSet
     const size = options._size || options.size || 50
+    const zoom = options.zoom
     const choropleth = options.choropleth
     const _width = options._width
     const _height = options._height
@@ -37,13 +39,21 @@ export default {
       y: 0
     }
 
+    if (options.unit === 'px') xScale = yScale = size
+
     for (let i = 0; i < data.length; i++) {
       const coordinates = data[i].geometry._coordinates || data[i].geometry.coordinates
       let coordX = (coordinates[0] - offset.x) / xScale
       let coordY = (coordinates[1] - offset.y) / yScale
-      if (options.unit !== 'm') {
-        yScale = size
-        xScale = size
+      if (options.unit === 'm') {
+        coordX = parseFloat(coordX.toFixed(4))
+        coordY = parseFloat(coordY.toFixed(4))
+      } else {
+        let suffix = 0
+        if (zoom - 15 > 0) suffix = 2
+        console.log('suffix', suffix)
+        coordX = parseFloat(coordX.toFixed(suffix))
+        coordY = parseFloat(coordY.toFixed(suffix))
       }
 
       const gridKey = coordX + ',' + coordY

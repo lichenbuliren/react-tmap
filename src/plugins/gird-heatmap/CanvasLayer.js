@@ -36,12 +36,18 @@ CanvasLayer.CSS_TRANSFORM = (function () {
 CanvasLayer.prototype.construct = function () {
   var mapSize = getMapSize(this.map)
   var canvas = this.canvas = document.createElement('canvas')
-  canvas.style.cssText = `width: ${mapSize.width}pxheight: ${mapSize.height}pxborder: 1px solid redbox-sizing: border-boxposition: relative z-index: ${this.zIndex}`
-
-  this.getPanes().overlayLayer.appendChild(canvas)
+  canvas.style.cssText = `width: ${mapSize.width}px;height: ${mapSize.height}px;border: 1px solid red;box-sizing: border-box;position: relative;z-index: ${this.zIndex}`
   this.resize()
-  this.changeHandler = qq.maps.event.addListener(this.map, 'bounds_changed', () => {
+  this.getPanes().overlayLayer.appendChild(canvas)
+  this.resizeHandler = qq.maps.event.addListener(this.map, 'resize', () => {
     this.resize()
+  })
+
+  this.boundsChangedHandler = qq.maps.event.addListener(this.map, 'dragend', () => {
+    this.resize()
+  })
+
+  qq.maps.event.addListener(this.map, 'zoom_changed', () => {
     this.draw()
   })
   this.constructed = true
@@ -56,12 +62,8 @@ CanvasLayer.prototype.destory = function () {
   this.canvas = null
 }
 
-CanvasLayer.prototype.draw = function () {
-  var self = this
-  if (!this.map || !this.canvas) {
-    return
-  }
-
+CanvasLayer.prototype.repositionCanvas = function () {
+  if (!this.map) return
   // 返回当前地图的视野范围
   var bounds = this.map.getBounds()
   // 地图视野范围内左上角坐标经纬度 LatLng
@@ -76,10 +78,10 @@ CanvasLayer.prototype.draw = function () {
   var offset = projection.fromLatLngToDivPixel(topLeft)
 
   this.canvas.style[CanvasLayer.CSS_TRANSFORM] = `translate(${Math.round(offset.x)}px, ${Math.round(offset.y)}px)`
-  self.update()
+  this.draw()
 }
 
-CanvasLayer.prototype.update = function () {
+CanvasLayer.prototype.draw = function () {
   this.options.update && this.options.update.call(this)
 }
 
@@ -104,6 +106,9 @@ CanvasLayer.prototype.resize = function () {
 
   canvas.style.width = `${width}px`
   canvas.style.height = `${height}px`
+
+  this.repositionCanvas()
+  this.draw()
 }
 
 CanvasLayer.prototype.getContainer = function () {
