@@ -9,13 +9,11 @@
 function CanvasLayer (options) {
   /**
    * If true, canvas is in a map pane and the OverlayView is fully functional.
-   * See google.maps.OverlayView.onAdd for more information.
+   * See google.maps.OverlayView.construct for more information.
    * @type {boolean}
    * @private
    */
   this.isAdded_ = false
-
-  if (options.map) this.setMap(options.map)
 
   /**
    * If true, each update will immediately schedule the next.
@@ -30,6 +28,13 @@ function CanvasLayer (options) {
    * @private
    */
   this.paneName_ = CanvasLayer.DEFAULT_PANE_NAME_
+
+  const canvas = this.canvas = document.createElement('canvas')
+  canvas.style.position = 'absolute'
+  canvas.style.top = 0
+  canvas.style.left = 0
+  canvas.style.pointerEvents = 'none'
+  this.canvas = canvas
 
   /**
    * A user-supplied function called whenever an update is required. Null or
@@ -86,6 +91,8 @@ function CanvasLayer (options) {
    * @private
    */
   this.requestAnimationFrameId_ = null
+
+  this.context = '2d'
 
   /**
    * The CSS width of the canvas, which may be different than the width of the
@@ -144,7 +151,6 @@ function CanvasLayer (options) {
   if (options) {
     this.setOptions(options)
   }
-  // qq.maps.Overlay.call(this)
 }
 
 var global = typeof window === 'undefined' ? {} : window
@@ -160,21 +166,6 @@ if (global.qq && global.qq.maps) {
    */
   CanvasLayer.DEFAULT_PANE_NAME_ = 'overlayLayer'
 
-  CanvasLayer.prototype.construct = function() {
-    var canvas = this.canvas = document.createElement('canvas')
-    canvas.style.position = 'absolute'
-    canvas.style.top = 0
-    canvas.style.left = 0
-    canvas.style.pointerEvents = 'none'
-    const mapDiv = this.map.getContainer()
-    const width = mapDiv.clientWidth
-    const height = mapDiv.clientHeight
-    canvas.style.cssText = `width: ${width}px;height: ${height}px;border: 1px solid red;box-sizing: border-box;position: relative;`
-
-    var panes = this.getPanes()
-    //设置panes的层级，overlayMouseTarget可接收点击事件
-    panes.overlayMouseTarget.appendChild(this.canvas)
-  }
   /**
    * Transform CSS property name, with vendor prefix if required. If browser
    * does not support transforms, property will be ignored.
@@ -245,6 +236,7 @@ if (global.qq && global.qq.maps) {
     }
 
     if (options.updateHandler !== undefined) {
+      console.log('set up updateHandler')
       this.setUpdateHandler(options.updateHandler)
     }
 
@@ -256,7 +248,10 @@ if (global.qq && global.qq.maps) {
       this.setResolutionScale(options.resolutionScale)
     }
 
+    if (options.context) this.context = options.context
+
     if (options.map !== undefined) {
+      console.log('set up map', options.map)
       this.setMap(options.map)
     }
   }
@@ -302,7 +297,7 @@ if (global.qq && global.qq.maps) {
 
   /**
    * Adds the canvas to the specified container pane. Since this is guaranteed to
-   * execute only after onAdd is called, this is when paneName's existence is
+   * execute only after construct is called, this is when paneName's existence is
    * checked (and an error is thrown if it doesn't exist).
    * @private
    */
@@ -311,7 +306,7 @@ if (global.qq && global.qq.maps) {
       return
     }
 
-    // onAdd has been called, so panes can be used
+    // construct has been called, so panes can be used
     var panes = this.getPanes()
     if (!panes[this.paneName_]) {
       throw new Error('"' + this.paneName_ + '" is not a valid MapPane name.')
@@ -357,7 +352,7 @@ if (global.qq && global.qq.maps) {
   /**
    * @inheritDoc
    */
-  CanvasLayer.prototype.onAdd = function () {
+  CanvasLayer.prototype.construct = function () {
     if (this.isAdded_) {
       return
     }
@@ -411,11 +406,9 @@ if (global.qq && global.qq.maps) {
       return
     }
 
-    console.log('resize')
     var map = this.getMap()
-    var mapWidth = map.getContainer().offsetWidth
-    var mapHeight = map.getContainer().offsetHeight
-    console.log('mapWidth, mapHeight', mapWidth, mapHeight)
+    var mapWidth = map.getContainer().clientWidth
+    var mapHeight = map.getContainer().clientHeight
 
     var newWidth = mapWidth * this.resolutionScale_
     var newHeight = mapHeight * this.resolutionScale_
@@ -438,6 +431,10 @@ if (global.qq && global.qq.maps) {
       this.canvas.style.width = mapWidth + 'px'
       this.canvas.style.height = mapHeight + 'px'
     }
+
+    if (this.context === '2d') {
+      // this.canvas.getContext(this.context).scale(devicePixelRatio, devicePixelRatio)
+    }
   }
 
   /**
@@ -458,8 +455,10 @@ if (global.qq && global.qq.maps) {
     //     this causes noticeable hitches in map and overlay relative
     //     positioning.
 
-    var map = this.getMap()
-    console.log('canvas layer draw')
+    const map = this.getMap()
+    const mapContainer = map.getContainer()
+    const mapWidth = mapContainer.clientWidth
+    const mapHeight = mapContainer.clientHeight
     // topLeft can't be calculated from map.getBounds(), because bounds are
     // clamped to -180 and 180 when completely zoomed out. Instead, calculate
     // left as an offset from the center, which is an unwrapped LatLng.
@@ -467,14 +466,20 @@ if (global.qq && global.qq.maps) {
     var center = map.getCenter()
     var scale = Math.pow(2, map.getZoom())
     var left = center.getLng() - this.canvasCssWidth_ * 180 / (256 * scale)
+    console.log('====================================')
+    console.log('center offset left', left)
+    console.log('====================================')
     this.topLeft_ = new qq.maps.LatLng(top, left)
     // Canvas position relative to draggable map's container depends on
     // overlayView's projection, not the map's. Have to use the center of the
     // map for this, not the top left, for the same reason as above.
     var projection = this.getProjection()
     var divCenter = projection.fromLatLngToDivPixel(center)
+    console.log(divCenter)
+    console.log(this.canvasCssHeight_, this.canvasCssWidth_);
     var offsetX = -Math.round(this.canvasCssWidth_ / 2 - divCenter.x)
     var offsetY = -Math.round(this.canvasCssHeight_ / 2 - divCenter.y)
+    console.log('offsetX, offsetY', offsetX, offsetY)
     this.canvas.style[CanvasLayer.CSS_TRANSFORM_] = 'translate(' + offsetX + 'px,' + offsetY + 'px)'
 
     this.scheduleUpdate()

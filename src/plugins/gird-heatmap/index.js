@@ -9,6 +9,8 @@ import DataSet from '../../data/DataSet'
 import _extend from 'extend'
 import { gradient } from '../../config'
 
+const resolutionScale = window.devicePixelRatio
+
 class Layer extends BaseLayer {
   constructor (map, dataSet, options) {
     options = _extend(true, {}, { gradient, unit: 'm' }, options)
@@ -21,12 +23,13 @@ class Layer extends BaseLayer {
 
     var canvasLayerOptions = {
       map: map,
+      context: this.context,
       animate: false,
       updateHandler: function () {
         console.log('update handler')
         self._canvasUpdate()
       },
-      resolutionScale: 1
+      resolutionScale: resolutionScale
     }
 
     const canvasLayer = this.canvasLayer = new CanvasLayer(canvasLayerOptions)
@@ -133,7 +136,6 @@ class Layer extends BaseLayer {
     console.log('scale', scale)
     var offset = mapProjection.fromLatLngToPoint(this.canvasLayer.getTopLeft())
     var dataGetOptions = {
-      // fromColumn: self.options.coordType == 'bd09mc' ? 'coordinates' : 'coordinates_mercator',
       transferCoordinate: function (coordinate) {
         var latLng = new qq.maps.LatLng(coordinate[1], coordinate[0])
         var worldPoint = mapProjection.fromLatLngToPoint(latLng)
@@ -173,6 +175,9 @@ class Layer extends BaseLayer {
     } else {
       self.options._size = self.options.size
     }
+
+    if (self.choropleth) self.options.choropleth = self.choropleth
+    console.log('self options', self.options)
 
     this.drawContext(context, new DataSet(data), self.options, pixel)
 

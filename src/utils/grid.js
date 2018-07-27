@@ -39,12 +39,13 @@ export default {
 
     for (let i = 0; i < data.length; i++) {
       const coordinates = data[i].geometry._coordinates || data[i].geometry.coordinates
-      let coordX = (coordinates[0] - offset.x) / xScale
-      let coordY = (coordinates[1] - offset.y) / yScale
       if (options.unit !== 'm') {
         yScale = size
         xScale = size
       }
+
+      let coordX = Math.floor((coordinates[0] - offset.x) / xScale)
+      let coordY = Math.floor((coordinates[1] - offset.y) / yScale)
 
       const gridKey = coordX + ',' + coordY
       if (!grids[gridKey]) {

@@ -68,7 +68,7 @@ class BaseLayer {
     if (self.options.splitList === undefined) {
       var min = self.options.min || this.dataSet.getMin('count')
       var max = self.options.max || this.dataSet.getMax('count')
-      self.choropleth.generateByMinMax(min, max)
+      self.choropleth.generateByMinMax(min, max, this.options.gradient)
     }
   }
 
