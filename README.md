@@ -19,23 +19,22 @@
 
 ## 基本用法
 
-在页面模板层，引入基础地图库
+在页面模板层，引入基础地图库: [传送门](http://lbs.qq.com/javascript_v2/guide-base.html)
+组件支持官方的所有方法与属性
 
-1. 引入 QQ 地图库
+### 1、引入 QQ 地图库
 
   ``` html
   <script src="//map.qq.com/api/js?v=2.exp&key=[开发者个人密钥]"></script>
   ```
 
-  接入指引：[传送门](http://lbs.qq.com/javascript_v2/guide-base.html)
+### 2、如果要使用默认热力图组件，需要而外引入热力图库
 
-2. 如果要使用热力图组件，需要而外引入热力图库
+  ``` html
+  <script src="http://open.map.qq.com/apifiles/plugins/heatmap/heatmap.min.js"></script>  
+  ```
 
-   ``` html
-   <script src="http://open.map.qq.com/apifiles/plugins/heatmap/heatmap.min.js"></script>  
-   ```
-
-### QMap 地图组件
+## QMap 地图组件
 
 支持的 `options` ，除了地图官方默认支持的属性 [MapOptions](http://lbs.qq.com/javascript_v2/doc/mapoptions.html) 之外，额外支持
 
@@ -52,7 +51,7 @@
 ></QMap>
 ```
 
-### Marker 标记组件
+## Marker 标记组件
 
 ``` jsx
 <Marker
@@ -68,7 +67,7 @@
 />
 ```
 
-### MarkerList 标记列表
+## MarkerList 标记列表
 
 ``` jsx
 <MarkerList
@@ -81,7 +80,7 @@
 />
 ```
 
-### Info 提示弹层组件
+## Info 提示弹层组件
 
 ``` jsx
 <Info
@@ -94,7 +93,9 @@
 />
 ```
 
-### Polygon 多边形
+## Polygon 多边形
+
+![多边形组件](./assets/polygon.png)
 
 ``` jsx
 <Polygon
@@ -112,7 +113,9 @@
 />
 ```
 
-### Circle 圆形
+## Circle 圆形
+
+![圆形组件](./assets/circle.png)
 
 ``` jsx
 <Circle
@@ -127,7 +130,9 @@
 />
 ```
 
-### Heatmap 热力图
+## Heatmap 热力图
+
+![默认热力图](./assets/heatmap.png)
 
 ``` jsx
 const heatMapData = {
@@ -141,7 +146,7 @@ const heatMapData = {
 <HeatMap heatData={heatMapData} options={heatMapOptions} />
 ```
 
-### 自定义控件
+## 自定义控件
 
 ``` jsx
 import React from 'react'
@@ -171,6 +176,13 @@ export default class CustomControl extends Control {
 ```
 
 ### 网格热力图
+默认提供两种单位的网格热力图实现：px 和 m
+其中，单位为『px』的时候，地图缩放会自动聚合，而单位为『m』的时候，这时候绘制的是代表实际地图物理距离，不做缩放处理
+
+![百米网格，单位为 "px"](./assets/grid.png)
+![百米网格，单位为 "m"](./assets/gird2.png)
+
+具体配置如下：
 
 ``` jsx
 import { QMap, GridHeatmap } from 'qmap'
@@ -188,8 +200,8 @@ const gridOptions = {
   height: 101,
   // 绘制单位
   unit: 'm',
-  // 全局网格透明度
-  globalAlpha: 0.8,
+  // 全局 canvas 上下文网格透明度
+  globalAlpha: 0.6,
   // 文案绘制配置
   label: {
     show: true,
@@ -198,9 +210,9 @@ const gridOptions = {
     font: '12px Arial',
     shadowBlur: 10
   },
-  // 渐变色阶
+  // 渐变色阶，如果 value 值为长度为 2 数组，第二个值为网格文本的色值，这里会覆盖上面的 label 中的 fillStyle 值
   gradient: {
-    0.16: '#ADD7FF',
+    0.16: ['#ADD7FF', '#fff'],
     0.32: '#87C1FF',
     0.48: '#60A8FF',
     0.64: '#338BFF',
@@ -240,6 +252,21 @@ handleMapIdle = map => {
 >
 ```
 
+## 特别处理
+
+如果要实现官方的 `addListenerOnce` 方法，只需要在组件的修改组件内部 `get events()` 的配置：__在方法配置里面，配置第二个参数为 true__
+
+``` jsx
+get events () {
+  return [
+    'click',
+    ['idle', true],
+    'tilesloaded',
+    'resize'
+  ]
+}
+```
+
 ### 参考资料
 
 - [react-bmap 百度地图 React 实现方式](https://github.com/huiyan-fe/react-bmap)
@@ -247,4 +274,3 @@ handleMapIdle = map => {
 
 ## TODOS
 - 其他基础地图组件实现
-- 支持像素单位的热力图缩放，配置自定义色阶
