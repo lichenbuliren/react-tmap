@@ -1,45 +1,26 @@
-/**
- * @author kyle / http://nikai.us/
- */
-
-import BaseLayer from '../BaseLayer'
+/* global qq */
+import BaseLayer from './BaseLayer'
 import CanvasLayer from './CanvasLayer'
-import clear from '../../canvas/clear'
+import { clear } from '../../utils'
 import DataSet from '../../data/DataSet'
-import _extend from 'extend'
 import { gradient } from '../../config'
+import _extend from 'extend'
 
-const resolutionScale = window.devicePixelRatio
-
-class Layer extends BaseLayer {
-  constructor (map, dataSet, options) {
+class GridHeatmap extends BaseLayer {
+  constructor (map, data, options) {
     options = _extend(true, {}, { gradient, unit: 'm' }, options)
+    const dataSet = new DataSet(data)
     super(map, dataSet, options)
-    var self = this
-    options = options || {}
-
-    self.init(options)
-    self.argCheck(options)
-
-    var canvasLayerOptions = {
-      map: map,
+    // 记录当前在可是区域内的网格数
+    this.inViewPortCount = 0
+    this.init(options)
+    this._zoom = map.getZoom()
+    this.canvasLayer = new CanvasLayer(map, {
       context: this.context,
-      animate: false,
-      updateHandler: function () {
-        console.log('update handler')
-        self._canvasUpdate()
-      },
-      resolutionScale: resolutionScale
-    }
-
-    const canvasLayer = this.canvasLayer = new CanvasLayer(canvasLayerOptions)
-
-    // dataSet.on('change', function () {
-    //   canvasLayer.draw()
-    // })
-    this.clickEvent = this.clickEvent.bind(this)
-    this.mousemoveEvent = this.mousemoveEvent.bind(this)
-    this.bindEvent()
+      paneName: options.paneName,
+      zIndex: options.zIndex,
+      update: () => this._canvasUpdate()
+    })
   }
 
   clickEvent (e) {
@@ -53,28 +34,24 @@ class Layer extends BaseLayer {
   }
 
   bindEvent (e) {
-    var map = this.map
-
+    this.unbindEvent()
     if (this.options.methods) {
       if (this.options.methods.click) {
-        map.setDefaultCursor('default')
-        map.addListener('click', this.clickEvent)
+        this.clickMapHandler = qq.maps.event.addListener(this.map, 'click', this.clickEvent)
       }
       if (this.options.methods.mousemove) {
-        map.addListener('mousemove', this.mousemoveEvent)
+        this.mouseMoveMapHandler = qq.maps.event.addListener(this.map, 'mousemove', this.mousemoveEvent)
       }
     }
   }
 
   unbindEvent (e) {
-    var map = this.map
-
     if (this.options.methods) {
       if (this.options.methods.click) {
-        map.removeListener('click', this.clickEvent)
+        qq.maps.event.removeListener(this.clickMapHandler)
       }
       if (this.options.methods.mousemove) {
-        map.removeListener('mousemove', this.mousemoveEvent)
+        qq.maps.event.removeListener(this.mouseMoveMapHandler)
       }
     }
   }
@@ -83,139 +60,109 @@ class Layer extends BaseLayer {
     return this.canvasLayer.canvas.getContext(this.context)
   }
 
-  _canvasUpdate (time) {
-    if (!this.canvasLayer) {
+  _canvasUpdate () {
+    const map = this.map
+    const projection = map.getProjection()
+    if (!this.canvasLayer || !projection) {
       return
     }
-
-    var self = this
-
-    var animationOptions = self.options.animation
-
-    var context = this.getContext()
-
-    if (self.isEnabledTime()) {
-      if (time === undefined) {
-        clear(context)
-        return
+    const bounds = map.getBounds()
+    const topLeft = new qq.maps.LatLng(
+      bounds.getNorthEast().getLat(),
+      bounds.getSouthWest().getLng()
+    )
+    const zoom = map.getZoom()
+    const context = this.getContext()
+    const zoomUnit = Math.pow(2, 17 - zoom)
+    const layerProjection = this.canvasLayer.getProjection()
+    const layerOffset = layerProjection.fromLatLngToDivPixel(topLeft)
+    const dataGetOptions = {
+      fromColumn: 'coordinates',
+      filter: item => {
+        const { geometry: { coordinates } } = item
+        const point = new qq.maps.LatLng(coordinates[1], coordinates[0])
+        return bounds.contains(point)
+      },
+      transferCoordinate: function (coordinate) {
+        const pixel = layerProjection.fromLatLngToDivPixel(new qq.maps.LatLng(coordinate[1], coordinate[0]))
+        const point = {
+          x: pixel.x - layerOffset.x,
+          y: pixel.y - layerOffset.y
+        }
+        // 这里偏移网格大小的一半
+        return [point.x, point.y]
       }
-      if (this.context == '2d') {
-        context.save()
-        context.globalCompositeOperation = 'destination-out'
-        context.fillStyle = 'rgba(0, 0, 0, .1)'
-        context.fillRect(0, 0, context.canvas.width, context.canvas.height)
-        context.restore()
-      }
-    } else {
-      clear(context)
     }
 
-    if (this.context == '2d') {
-      for (var key in self.options) {
-        context[key] = self.options[key]
+    const data = this.dataSet.get(dataGetOptions)
+    if (this.context === '2d') {
+      // 配置全局 canvas 上下文参数
+      for (let key in this.options) {
+        context[key] = this.options[key]
       }
     } else {
       context.clear(context.COLOR_BUFFER_BIT)
     }
 
-    if (
-      (self.options.minZoom && map.getZoom() < self.options.minZoom) ||
-      (self.options.maxZoom && map.getZoom() > self.options.maxZoom)
-    ) {
+    // 计算缩放级别
+    if ((this.options.minZoom && map.getZoom() < this.options.minZoom) || (this.options.maxZoom && map.getZoom() > this.options.maxZoom)) {
       return
     }
-
-    var scale = 1
-    if (this.context != '2d') {
-      scale = this.canvasLayer.devicePixelRatio
-    }
-
-    var map = this.map
-    var mapProjection = map.getProjection()
-    var scale = Math.pow(2, map.zoom) * resolutionScale
-    console.log('scale', scale)
-    var offset = mapProjection.fromLatLngToPoint(this.canvasLayer.getTopLeft())
-    var dataGetOptions = {
-      transferCoordinate: function (coordinate) {
-        var latLng = new qq.maps.LatLng(coordinate[1], coordinate[0])
-        var worldPoint = mapProjection.fromLatLngToPoint(latLng)
-        var pixel = {
-          x: (worldPoint.x - offset.x) * scale,
-          y: (worldPoint.y - offset.y) * scale
-        }
-        return [pixel.x, pixel.y]
-      }
-    }
-
-    if (time !== undefined) {
-      dataGetOptions.filter = function (item) {
-        var trails = animationOptions.trails || 10
-        if (time && item.time > time - trails && item.time < time) {
-          return true
-        } else {
-          return false
-        }
-      }
-    }
-
     // get data from data set
-    var data = self.dataSet.get(dataGetOptions)
-
-    this.processData(data)
-
-    var latLng = new qq.maps.LatLng(0, 0)
-    var worldPoint = mapProjection.fromLatLngToPoint(latLng)
-    var pixel = {
-      x: (worldPoint.x - offset.x) * scale,
-      y: (worldPoint.y - offset.y) * scale
-    }
-
-    if (self.options.unit == 'm' && self.options.size) {
-      self.options._size = self.options.size / zoomUnit
+    if (this.options.unit === 'm') {
+      if (this.options.size) {
+        this.options._size = this.options.size / zoomUnit
+        this.options._height = this.options.height / zoomUnit
+        this.options._width = this.options.width / zoomUnit
+      }
     } else {
-      self.options._size = self.options.size
+      this.options._size = this.options.size
+      this.options._height = this.options.height
+      this.options._width = this.options.width
     }
+    this.options.zoom = zoom
 
-    if (self.choropleth) self.options.choropleth = self.choropleth
-    console.log('self options', self.options)
+    clear(context)
 
-    this.drawContext(context, new DataSet(data), self.options, pixel)
-
-    self.options.updateCallback && self.options.updateCallback(time)
+    this.drawContext(context, data, this.options, {
+      x: parseFloat(layerOffset.x.toFixed(4)),
+      y: parseFloat(layerOffset.y.toFixed(4))
+    })
   }
 
   init (options) {
-    var self = this
-
-    self.options = options
-
+    this.options = options
+    // 调用父类方法，得到颜色分割区间
     this.initDataRange(options)
+    // 颜色配置区间
+    this.options.choropleth = this.choropleth
+    this.options.category = this.category
+    // 设置 canvas 绘制上下文
+    this.context = this.options.context || '2d'
 
-    this.context = self.options.context || '2d'
-
-    if (self.options.zIndex) {
-      this.canvasLayer && this.canvasLayer.setZIndex(self.options.zIndex)
+    if (this.options.zIndex) {
+      this.canvasLayer && this.canvasLayer.setZIndex(this.options.zIndex)
     }
 
-    this.initAnimator()
+    if (this.options.max) {
+      this.intensity.setMax(this.options.max)
+    }
+
+    if (this.options.min) {
+      this.intensity.setMin(this.options.min)
+    }
+
+    this.bindEvent()
   }
 
   addAnimatorEvent () {
-    this.map.addListener('movestart', this.animatorMovestartEvent.bind(this))
-    this.map.addListener('moveend', this.animatorMoveendEvent.bind(this))
-  }
-
-  show () {
-    this.map.addOverlay(this.canvasLayer)
-  }
-
-  hide () {
-    this.map.removeOverlay(this.canvasLayer)
+    qq.maps.event.addListener(this.map, 'movestart', this.animatorMovestartEvent.bind(this))
+    qq.maps.event.addListener(this.map, 'moveend', this.animatorMoveendEvent.bind(this))
   }
 
   draw () {
-    self.canvasLayer.draw()
+    this.canvasLayer.draw()
   }
 }
 
-export default Layer
+export default GridHeatmap

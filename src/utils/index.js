@@ -128,6 +128,11 @@ const clear = context => {
   context && context.clearRect && context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 }
 
+const toFixedNumber = (number, count) => {
+  const unit = Math.pow(10, count)
+  return Math.round(number * unit / unit)
+}
+
 export {
   getAddressByLatLng,
   convertorPointsToPath,
@@ -139,5 +144,6 @@ export {
   isCrossingPolygonal,
   getPolygonAreaCenter,
   getMapSize,
-  clear
+  clear,
+  toFixedNumber
 }
