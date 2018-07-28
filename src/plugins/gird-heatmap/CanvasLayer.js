@@ -39,15 +39,8 @@ CanvasLayer.prototype.construct = function () {
   canvas.style.cssText = `width: ${mapSize.width}px;height: ${mapSize.height}px;border: 1px solid red;box-sizing: border-box;position: relative;z-index: ${this.zIndex}`
   this.resize()
   this.getPanes().overlayLayer.appendChild(canvas)
-  this.resizeHandler = qq.maps.event.addListener(this.map, 'resize', () => {
+  qq.maps.event.addListener(this.map, 'bounds_changed', () => {
     this.resize()
-  })
-
-  this.boundsChangedHandler = qq.maps.event.addListener(this.map, 'dragend', () => {
-    this.resize()
-  })
-
-  qq.maps.event.addListener(this.map, 'zoom_changed', () => {
     this.draw()
   })
   this.constructed = true
@@ -108,7 +101,6 @@ CanvasLayer.prototype.resize = function () {
   canvas.style.height = `${height}px`
 
   this.repositionCanvas()
-  this.draw()
 }
 
 CanvasLayer.prototype.getContainer = function () {

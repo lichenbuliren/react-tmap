@@ -1,5 +1,5 @@
 /* global qq */
-import BaseLayer from './BaseLayer'
+import BaseLayer from '../BaseLayer'
 import CanvasLayer from './CanvasLayer'
 import { clear } from '../../utils'
 import DataSet from '../../data/DataSet'
@@ -66,6 +66,8 @@ class GridHeatmap extends BaseLayer {
     if (!this.canvasLayer || !projection) {
       return
     }
+
+    console.log('_canvas update')
     const bounds = map.getBounds()
     const topLeft = new qq.maps.LatLng(
       bounds.getNorthEast().getLat(),

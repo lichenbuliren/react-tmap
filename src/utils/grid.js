@@ -24,6 +24,7 @@ const getMaxAndMinCountByGrids = grids => {
 export default {
   draw: function (context, dataSet, options) {
     context.save()
+    console.log('canvas draw')
     const grids = {}
     const data = dataSet instanceof DataSet ? dataSet.get() : dataSet
     const size = options._size || options.size || 50
@@ -49,11 +50,10 @@ export default {
         coordX = parseFloat(coordX.toFixed(4))
         coordY = parseFloat(coordY.toFixed(4))
       } else {
-        let suffix = 0
-        if (zoom - 15 > 0) suffix = 2
-        console.log('suffix', suffix)
-        coordX = parseFloat(coordX.toFixed(suffix))
-        coordY = parseFloat(coordY.toFixed(suffix))
+        let suffix = zoom - 15
+        if (suffix < 0) suffix = 0
+        coordX = toFixedNumber(coordX, suffix)
+        coordY = toFixedNumber(coordY, suffix)
       }
 
       const gridKey = coordX + ',' + coordY
