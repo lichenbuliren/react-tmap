@@ -27,7 +27,7 @@ class BaseLayer {
       _dataSet = data.map((point, i) => ({
         geometry: {
           type: 'Point',
-          coordinates: [parseFloat(point.lng.toFixed(3)), parseFloat(point.lat.toFixed(3))]
+          coordinates: [point.lng, point.lat]
         },
         count: data[i][options.countField]
       }))

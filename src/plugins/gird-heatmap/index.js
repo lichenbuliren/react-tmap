@@ -8,17 +8,30 @@ import _extend from 'extend'
 
 class GridHeatmap extends BaseLayer {
   constructor (map, data, options) {
-    options = _extend(true, {}, { gradient, unit: 'm', countField: 'count' }, options)
+    options = _extend(true, {}, {
+      gradient,
+      unit: 'm',
+      countField: 'count',
+      showText: true,
+      showTextZoomLevel: 16
+    }, options)
     super(map, data, options)
     // 记录当前在可是区域内的网格数
     this.inViewPortCount = 0
     this.init(options)
     this._zoom = map.getZoom()
+    this.options.showText = this._zoom > this.options.showTextZoomLevel
     this.canvasLayer = new CanvasLayer(map, {
       context: this.context,
       paneName: options.paneName,
       zIndex: options.zIndex,
       update: () => this._canvasUpdate()
+    })
+
+    qq.maps.event.addListener(this.map, 'zoom_changed', () => {
+      const zoom = this.map.getZoom()
+      const showTextZoomLevel = options.showTextZoomLevel
+      this.options.showText = zoom > showTextZoomLevel
     })
   }
 
@@ -65,11 +78,16 @@ class GridHeatmap extends BaseLayer {
         },
         count: data[i][this.options.countField]
       }))
-      _dataSet = new DataSet(_dataSet)
     }
 
     this.dataSet.set(_dataSet)
     if (this.canvasLayer) this.canvasLayer.draw()
+  }
+
+  updateOptions (opts) {
+    console.log(opts)
+    this.options = _extend(true, this.options, opts)
+    console.log(this.options)
   }
 
   getContext () {
@@ -107,7 +125,6 @@ class GridHeatmap extends BaseLayer {
           x: pixel.x - layerOffset.x,
           y: pixel.y - layerOffset.y
         }
-        // 这里偏移网格大小的一半
         return [point.x, point.y]
       }
     }
@@ -143,8 +160,8 @@ class GridHeatmap extends BaseLayer {
     clear(context)
 
     this.drawContext(context, data, this.options, {
-      x: parseFloat(layerOffset.x.toFixed(4)),
-      y: parseFloat(layerOffset.y.toFixed(4))
+      x: layerOffset.x,
+      y: layerOffset.y
     })
   }
 
@@ -176,10 +193,6 @@ class GridHeatmap extends BaseLayer {
   addAnimatorEvent () {
     qq.maps.event.addListener(this.map, 'movestart', this.animatorMovestartEvent.bind(this))
     qq.maps.event.addListener(this.map, 'moveend', this.animatorMoveendEvent.bind(this))
-  }
-
-  draw () {
-    this.canvasLayer.draw()
   }
 }
 

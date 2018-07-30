@@ -26,7 +26,6 @@ export default {
     const grids = {}
     const data = dataSet instanceof DataSet ? dataSet.get() : dataSet
     const size = options._size || options.size || 50
-    const zoom = options.zoom
     const choropleth = options.choropleth
     const _width = options._width
     const _height = options._height
@@ -45,8 +44,6 @@ export default {
       let coordX = (coordinates[0] - offset.x) / xScale
       let coordY = (coordinates[1] - offset.y) / yScale
       if (options.unit !== 'm') {
-        let suffix = zoom - 15
-        if (suffix < 0) suffix = 0
         coordX = Math.floor(coordX)
         coordY = Math.floor(coordY)
       }
@@ -93,16 +90,18 @@ export default {
         context.shadowBlur = options.label.shadowBlur
       }
 
-      for (let gridKey in grids) {
-        gridKey = gridKey.split(',')
-        const text = grids[gridKey]
-        const { value: { color } } = intensity.getTextColor(choropleth.getLegend(), grids[gridKey])
-        // 根据当前 count 值所在区间，获取对应的 text color 值
-        if (Object.prototype.toString.call(color) === '[object Array]' && color.length === 2) {
-          context.fillStyle = color[1]
+      if (options.showText) {
+        for (let gridKey in grids) {
+          gridKey = gridKey.split(',')
+          const text = grids[gridKey]
+          const { value: { color } } = intensity.getTextColor(choropleth.getLegend(), grids[gridKey])
+          // 根据当前 count 值所在区间，获取对应的 text color 值
+          if (Object.prototype.toString.call(color) === '[object Array]' && color.length === 2) {
+            context.fillStyle = color[1]
+          }
+          const textWidth = context.measureText(text).width
+          context.fillText(text, gridKey[0] * xScale + offset.x - textWidth / 2, gridKey[1] * yScale + offset.y + 5)
         }
-        const textWidth = context.measureText(text).width
-        context.fillText(text, gridKey[0] * xScale + offset.x - textWidth / 2, gridKey[1] * yScale + offset.y + 5)
       }
     }
 

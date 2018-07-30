@@ -133,6 +133,22 @@ const toFixedNumber = (number, count) => {
   return Math.round(number * unit / unit)
 }
 
+const fomatFloat = (value, n, flag = false) => {
+  const calc = flag ? Math.round : Math.floor
+  const f = calc(value * Math.pow(10, n)) / Math.pow(10, n)
+  let s = f.toString()
+  const rs = s.indexOf('.')
+  if (rs < 0) {
+    s += '.'
+  }
+
+  for (let i = s.length - s.indexOf('.'); i <= n; i++) {
+    s += '0'
+  }
+
+  return s
+}
+
 export {
   getAddressByLatLng,
   convertorPointsToPath,
@@ -145,5 +161,6 @@ export {
   getPolygonAreaCenter,
   getMapSize,
   clear,
-  toFixedNumber
+  toFixedNumber,
+  fomatFloat
 }

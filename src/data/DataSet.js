@@ -89,10 +89,10 @@ DataSet.prototype.get = function (args) {
     var data = this._data;
 
     var start = new Date();
-
     if (args.filter) {
         var newData = [];
         for (var i = 0; i < data.length; i++) {
+          
             if (args.filter(data[i])) {
                 newData.push(data[i]);
             }
