@@ -56,7 +56,13 @@ class GridHeatmap extends BaseLayer {
     }
   }
 
+  setData (data) {
+    this.dataSet.set(data)
+    if (this.canvasLayer) this.canvasLayer.draw()
+  }
+
   getContext () {
+    if (!this.canvasLayer.canvas) return null
     return this.canvasLayer.canvas.getContext(this.context)
   }
 
@@ -67,7 +73,6 @@ class GridHeatmap extends BaseLayer {
       return
     }
 
-    console.log('_canvas update')
     const bounds = map.getBounds()
     const topLeft = new qq.maps.LatLng(
       bounds.getNorthEast().getLat(),

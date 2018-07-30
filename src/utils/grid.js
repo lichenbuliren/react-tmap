@@ -24,7 +24,6 @@ const getMaxAndMinCountByGrids = grids => {
 export default {
   draw: function (context, dataSet, options) {
     context.save()
-    console.log('canvas draw')
     const grids = {}
     const data = dataSet instanceof DataSet ? dataSet.get() : dataSet
     const size = options._size || options.size || 50

@@ -36,13 +36,14 @@ CanvasLayer.CSS_TRANSFORM = (function () {
 CanvasLayer.prototype.construct = function () {
   var mapSize = getMapSize(this.map)
   var canvas = this.canvas = document.createElement('canvas')
-  canvas.style.cssText = `width: ${mapSize.width}px;height: ${mapSize.height}px;border: 1px solid red;box-sizing: border-box;position: relative;z-index: ${this.zIndex}`
+  canvas.style.cssText = `width: ${mapSize.width}px;height: ${mapSize.height}px;position: relative;z-index: ${this.zIndex}`
   this.resize()
   this.getPanes().overlayLayer.appendChild(canvas)
   qq.maps.event.addListener(this.map, 'bounds_changed', () => {
     this.resize()
     this.draw()
   })
+
   this.constructed = true
 }
 
@@ -71,7 +72,6 @@ CanvasLayer.prototype.repositionCanvas = function () {
   var offset = projection.fromLatLngToDivPixel(topLeft)
 
   this.canvas.style[CanvasLayer.CSS_TRANSFORM] = `translate(${Math.round(offset.x)}px, ${Math.round(offset.y)}px)`
-  this.draw()
 }
 
 CanvasLayer.prototype.draw = function () {
@@ -79,12 +79,11 @@ CanvasLayer.prototype.draw = function () {
 }
 
 CanvasLayer.prototype.resize = function () {
-  if (!this.map) return
+  if (!this.map || !this.canvas) return
   var size = getMapSize(this.map)
   var width = size.width
   var height = size.height
   var canvas = this.canvas
-
   var devicePixelRatio = this.devicePixelRatio = global.devicePixelRatio || 1
 
   canvas.width = width * devicePixelRatio

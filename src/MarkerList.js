@@ -19,39 +19,6 @@ export default class MarkerList extends React.Component {
     )
   }
 
-  constructor (props) {
-    super(props)
-    this.markers = []
-  }
-
-  componentDidMount () {
-    this.initialize()
-  }
-
-  initialize = () => {
-    const { data, showDecoration, ...rest } = this.props
-    this.clearMarkers()
-
-    data.forEach((m, i) => {
-      const decoration = showDecoration ? (m.decoration ? m.decoration : i) : null
-      this.markers.push(new Marker({
-        ...rest,
-        decoration
-      }))
-    })
-  }
-
-  componentWillUnmount () {
-    this.clearMarkers()
-  }
-
-  clearMarkers = () => {
-    this.markers.forEach(marker => {
-      marker.setMap(null)
-    })
-    this.markers = []
-  }
-
   render () {
     const { data, showDecoration, ...rest } = this.props
     return data.map((item, i) => {
