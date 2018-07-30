@@ -1,6 +1,5 @@
 import Intensity from './data-range/Intensity'
 import DataSet from '../data/DataSet'
-import { toFixedNumber } from './index'
 
 const getMaxAndMinCountByGrids = grids => {
   let max = 0
@@ -45,14 +44,11 @@ export default {
       const coordinates = data[i].geometry._coordinates || data[i].geometry.coordinates
       let coordX = (coordinates[0] - offset.x) / xScale
       let coordY = (coordinates[1] - offset.y) / yScale
-      if (options.unit === 'm') {
-        coordX = parseFloat(coordX.toFixed(4))
-        coordY = parseFloat(coordY.toFixed(4))
-      } else {
+      if (options.unit !== 'm') {
         let suffix = zoom - 15
         if (suffix < 0) suffix = 0
-        coordX = toFixedNumber(coordX, suffix)
-        coordY = toFixedNumber(coordY, suffix)
+        coordX = Math.floor(coordX)
+        coordY = Math.floor(coordY)
       }
 
       const gridKey = coordX + ',' + coordY

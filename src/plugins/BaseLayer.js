@@ -21,12 +21,20 @@ function animate (time) {
 }
 
 class BaseLayer {
-  constructor (map, dataSet, options) {
-    if (!(dataSet instanceof DataSet)) {
-      dataSet = new DataSet(dataSet)
+  constructor (map, data, options) {
+    let _dataSet = data
+    if (!(_dataSet instanceof DataSet)) {
+      _dataSet = data.map((point, i) => ({
+        geometry: {
+          type: 'Point',
+          coordinates: [parseFloat(point.lng.toFixed(3)), parseFloat(point.lat.toFixed(3))]
+        },
+        count: data[i][options.countField]
+      }))
+      _dataSet = new DataSet(_dataSet)
     }
 
-    this.dataSet = dataSet
+    this.dataSet = _dataSet
     this.map = map
   }
 

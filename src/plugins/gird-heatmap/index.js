@@ -1,16 +1,15 @@
 /* global qq */
 import BaseLayer from '../BaseLayer'
 import CanvasLayer from './CanvasLayer'
-import { clear } from '../../utils'
 import DataSet from '../../data/DataSet'
+import { clear } from '../../utils'
 import { gradient } from '../../config'
 import _extend from 'extend'
 
 class GridHeatmap extends BaseLayer {
   constructor (map, data, options) {
-    options = _extend(true, {}, { gradient, unit: 'm' }, options)
-    const dataSet = new DataSet(data)
-    super(map, dataSet, options)
+    options = _extend(true, {}, { gradient, unit: 'm', countField: 'count' }, options)
+    super(map, data, options)
     // 记录当前在可是区域内的网格数
     this.inViewPortCount = 0
     this.init(options)
@@ -57,7 +56,19 @@ class GridHeatmap extends BaseLayer {
   }
 
   setData (data) {
-    this.dataSet.set(data)
+    let _dataSet
+    if (!(_dataSet instanceof DataSet)) {
+      _dataSet = data.map((point, i) => ({
+        geometry: {
+          type: 'Point',
+          coordinates: [point.lng, point.lat]
+        },
+        count: data[i][this.options.countField]
+      }))
+      _dataSet = new DataSet(_dataSet)
+    }
+
+    this.dataSet.set(_dataSet)
     if (this.canvasLayer) this.canvasLayer.draw()
   }
 

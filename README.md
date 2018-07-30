@@ -28,7 +28,7 @@
   <script src="//map.qq.com/api/js?v=2.exp&key=[开发者个人密钥]"></script>
   ```
 
-### 2、如果要使用默认热力图组件，需要而外引入热力图库
+### 2、如果要使用默认热力图组件，需要额外引入热力图库
 
   ``` html
   <script src="http://open.map.qq.com/apifiles/plugins/heatmap/heatmap.min.js"></script>  
@@ -225,17 +225,11 @@ const gridOptions = {
 handleMapIdle = map => {
   console.log('map idle')
   const { gridOptions } = this.state
-  const dataSet = heatData.map((point, i) => ({
-    geometry: {
-      type: 'Point',
-      coordinates: [parseFloat(point.lng.toFixed(4)), parseFloat(point.lat.toFixed(4))]
-    },
-    count: heatData[i].cnt
-  }))
-
-  const max = Math.max(...heatData.map(item => item.cnt))
-  this.map = map
-  gridOptions.max = max
+  const dataSet = [{
+    lat: 11.212341,
+    lng: 131.123123,
+    count: 500
+  }, ...]
   this.gridHeatmap = new GridHeatmap(map, dataSet, gridOptions)
 }
 
