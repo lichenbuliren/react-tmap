@@ -54,6 +54,7 @@ export default class Marker extends Graphy {
       'flat',
       'cursor',
       'icon',
+      'size',
       'shadow',
       'shape',
       'title',
@@ -68,11 +69,15 @@ export default class Marker extends Graphy {
   }
 
   _getOptions = () => {
-    const { decoration } = this.props
+    const { decoration, icon } = this.props
     const options = this.getOptions(this.options)
     options.position = pointToLatLng(options.position)
     if (decoration) {
       options.decoration = new qq.maps.MarkerDecoration(decoration, new qq.maps.Point(0, -5))
+    }
+
+    if (icon && !(icon instanceof qq.maps.qq.maps.MarkerImage)) {
+      options.icon = new qq.maps.MarkerImage(icon)
     }
 
     return options
