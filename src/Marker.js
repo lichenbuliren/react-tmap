@@ -76,7 +76,7 @@ export default class Marker extends Graphy {
       options.decoration = new qq.maps.MarkerDecoration(decoration, new qq.maps.Point(0, -5))
     }
 
-    if (icon && !(icon instanceof qq.maps.qq.maps.MarkerImage)) {
+    if (icon && !(icon instanceof qq.maps.MarkerImage)) {
       options.icon = new qq.maps.MarkerImage(icon)
     }
 
