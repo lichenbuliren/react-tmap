@@ -75,7 +75,7 @@ export default class Marker extends Graphy {
     const options = this.getOptions(this.options)
     options.position = pointToLatLng(options.position)
     if (decoration) {
-      options.decoration = new qq.maps.MarkerDecoration(`<div style="color: ${color}">${decoration}</div>`, new qq.maps.Point(0, -5))
+      options.decoration = new qq.maps.MarkerDecoration(`<div style="color: ${color}"><span class="content">${decoration}</span></div>`, new qq.maps.Point(0, -5))
     }
 
     if (icon && !(icon instanceof qq.maps.MarkerImage)) {
