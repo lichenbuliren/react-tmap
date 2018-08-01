@@ -46,6 +46,7 @@ export default class Polygon extends Graphy {
       'fillColor',
       'map',
       'path',
+      'points',
       'strokeColor',
       'strokeDashStyle',
       'strokeWeight',
@@ -53,6 +54,12 @@ export default class Polygon extends Graphy {
       'zIndex',
       'draggable'
     ]
+  }
+
+  setPoints = (points) => {
+    const path = convertorPointsToPath(points)
+    if (!this.polygon) return
+    this.polygon.setPath(path)
   }
 
   _getOptions = () => {
@@ -69,6 +76,8 @@ export default class Polygon extends Graphy {
     if (!map) return
     if (!this.polygon) {
       this.polygon = new qq.maps.Polygon(options)
+      // 特殊处理额外自定义的事件
+      this.polygon.setPoints = this.setPoints
     }
     visible ? this.polygon.setMap(map) : this.polygon.setMap(null)
     return this.polygon
