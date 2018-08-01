@@ -6,7 +6,8 @@ import Graphy from './Graphy'
 export default class Marker extends Graphy {
   static defaultProps = {
     decoration: null,
-    visible: true
+    visible: true,
+    color: '#fff'
   }
 
   static propTypes = {
@@ -61,6 +62,7 @@ export default class Marker extends Graphy {
       'visible',
       'zIndex',
       'map',
+      'color',
       'position',
       'rotation',
       'autoRotation',
@@ -69,11 +71,11 @@ export default class Marker extends Graphy {
   }
 
   _getOptions = () => {
-    const { decoration, icon } = this.props
+    const { decoration, icon, color } = this.props
     const options = this.getOptions(this.options)
     options.position = pointToLatLng(options.position)
     if (decoration) {
-      options.decoration = new qq.maps.MarkerDecoration(decoration, new qq.maps.Point(0, -5))
+      options.decoration = new qq.maps.MarkerDecoration(`<div style="color: ${color}">${decoration}</div>`, new qq.maps.Point(0, -5))
     }
 
     if (icon && !(icon instanceof qq.maps.MarkerImage)) {
