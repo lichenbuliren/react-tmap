@@ -246,9 +246,9 @@ handleMapIdle = map => {
 >
 ```
 
-## 特别处理
+## 特别处理
 
-如果要实现官方的 `addListenerOnce` 方法，只需要在组件的修改组件内部 `get events()` 的配置：__在方法配置里面，配置第二个参数为 true__
+如果要实现官方的 `addListenerOnce` 方法，只需要在组件的修改组件内部 `get events()` 的配置：__在方法配置里面，配置第二个参数为 true__
 
 ``` jsx
 get events () {
