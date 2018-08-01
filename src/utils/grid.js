@@ -27,6 +27,8 @@ export default {
     const data = dataSet instanceof DataSet ? dataSet.get() : dataSet
     const size = options._size || options.size || 50
     const choropleth = options.choropleth
+    let intensity = options.intensity
+    const useLocalExtrema = options.useLocalExtrema
     const _width = options._width
     const _height = options._height
     // 如果有配置 width,height 项，则优先取 width,height
@@ -55,14 +57,17 @@ export default {
       grids[gridKey] += ~~(data[i].count || 1)
     }
 
-    const curMaxAndMin = getMaxAndMinCountByGrids(grids)
-    const intensity = new Intensity({
-      max: curMaxAndMin.max,
-      min: curMaxAndMin.min,
-      gradient: options.gradient
-    })
+    let curMaxAndMin
+    if (useLocalExtrema) {
+      curMaxAndMin = getMaxAndMinCountByGrids(grids)
+      intensity = new Intensity({
+        max: curMaxAndMin.max,
+        min: curMaxAndMin.min,
+        gradient: options.gradient
+      })
 
-    choropleth.generateByMinMax(curMaxAndMin.min, curMaxAndMin.max, options.gradient)
+      choropleth.generateByMinMax(curMaxAndMin.min, curMaxAndMin.max, options.gradient)
+    }
 
     for (let gridKey in grids) {
       gridKey = gridKey.split(',')
@@ -90,11 +95,11 @@ export default {
         context.shadowBlur = options.label.shadowBlur
       }
 
-      if (options.showText) {
+      if (options.showText && choropleth.getLegend().length) {
         for (let gridKey in grids) {
           gridKey = gridKey.split(',')
           const text = grids[gridKey]
-          const { value: { color } } = intensity.getTextColor(choropleth.getLegend(), grids[gridKey])
+          const { value: { color } } = intensity.getTextColor(choropleth.getLegend(), text)
           // 根据当前 count 值所在区间，获取对应的 text color 值
           if (Object.prototype.toString.call(color) === '[object Array]' && color.length === 2) {
             context.fillStyle = color[1]

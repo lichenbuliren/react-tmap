@@ -13,7 +13,9 @@ class GridHeatmap extends BaseLayer {
       unit: 'm',
       countField: 'count',
       showText: true,
-      showTextZoomLevel: 16
+      showTextZoomLevel: 16,
+      // 是否没屏都开启颜色计算，如果是，则没屏都会有一个最深颜色
+      useLocalExtrema: true
     }, options)
     super(map, data, options)
     // 记录当前在可是区域内的网格数
@@ -130,6 +132,7 @@ class GridHeatmap extends BaseLayer {
     }
 
     const data = this.dataSet.get(dataGetOptions)
+    if (!data.length) return
     if (this.context === '2d') {
       // 配置全局 canvas 上下文参数
       for (let key in this.options) {
@@ -172,6 +175,7 @@ class GridHeatmap extends BaseLayer {
     // 颜色配置区间
     this.options.choropleth = this.choropleth
     this.options.category = this.category
+    this.options.intensity = this.intensity
     // 设置 canvas 绘制上下文
     this.context = this.options.context || '2d'
 
