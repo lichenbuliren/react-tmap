@@ -33,6 +33,29 @@
   ``` html
   <script src="http://open.map.qq.com/apifiles/plugins/heatmap/heatmap.min.js"></script>  
   ```
+### 3、安装 npm 包
+
+  ``` bash
+  npm install --save react-tmap
+  ```
+
+### 4、引用地图组件
+
+  ``` jsx
+  import { QMap, HeatMap, Marker, MarkerList, Info } from 'react-tmap'
+
+  render () {
+    return (
+      <QMap
+        center={center}
+        style={{ height: '800px' }}
+        zoom={zoom}
+        events={{
+        idle: map => this.handleMapIdle(map)
+        }} />
+    )
+  }
+  ```
 
 ## QMap 地图组件
 
