@@ -1,5 +1,5 @@
 {
-  "name": "qmap",
+  "name": "react-tmap",
   "version": "1.0.0",
   "description": "腾讯地图 React 实现",
   "main": "dist/qmap.min.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lichenbuliren/qmap.git"
+    "url": "git+https://github.com/lichenbuliren/react-tmap.git"
   },
   "keywords": [
     "qq",
@@ -20,9 +20,9 @@
   "author": "lichenbuliren@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lichenbuliren/qmap/issues"
+    "url": "https://github.com/lichenbuliren/react-tmap/issues"
   },
-  "homepage": "https://github.com/lichenbuliren/qmap#readme",
+  "homepage": "https://github.com/lichenbuliren/react-tmap#readme",
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.54",
     "@babel/core": "^7.0.0-beta.54",

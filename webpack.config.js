@@ -9,9 +9,9 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'qmap.min.js',
+    filename: 'react-tmap.min.js',
     libraryTarget: 'umd',
-    library: 'qmap'
+    library: 'react-tmap'
   },
   module: {
     rules: [{
