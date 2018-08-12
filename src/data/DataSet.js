@@ -3,7 +3,7 @@
  */
 /* eslint-disable */
 import Event from "../utils/Event";
-import cityCenter from "../utils/cityCenter";
+// import cityCenter from "../utils/cityCenter";
 
 /**
  * DataSet
@@ -240,15 +240,16 @@ DataSet.prototype.initGeometry = function (transferFn) {
                         type: 'Point',
                         coordinates: [item.lng, item.lat]
                     }
-                } else if (item.city) {
-                    var center = cityCenter.getCenterByCityName(item.city);
-                    if (center) {
-                        item.geometry = {
-                            type: 'Point',
-                            coordinates: [center.lng, center.lat]
-                        }
-                    }
-                }
+                } 
+                // else if (item.city) {
+                //     var center = cityCenter.getCenterByCityName(item.city);
+                //     if (center) {
+                //         item.geometry = {
+                //             type: 'Point',
+                //             coordinates: [center.lng, center.lat]
+                //         }
+                //     }
+                // }
             }
         });
     }

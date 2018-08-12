@@ -5,7 +5,7 @@
   "main": "dist/qmap.min.js",
   "scripts": {
     "build": "webpack --mode production",
-    "watch": "webpack --mode production -w",
+    "watch": "webpack --mode development -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -46,10 +46,12 @@
     "standard": "^11.0.1",
     "uglifyjs-webpack-plugin": "^1.2.7",
     "webpack": "^4.16.1",
+    "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "extend": "^3.0.2",
+    "lodash": "^4.17.10",
     "react": "^16.4.1",
     "react-dom": "^16.4.1"
   }

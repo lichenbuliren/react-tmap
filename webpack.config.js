@@ -1,5 +1,6 @@
 const path = require('path')
 const UglifyPlugin = require('uglifyjs-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 const srcPath = path.resolve(__dirname, 'src')
 
@@ -53,6 +54,7 @@ module.exports = {
     }
   },
   plugins: [
-    new UglifyPlugin()
+    new UglifyPlugin(),
+    new BundleAnalyzerPlugin()
   ]
 }

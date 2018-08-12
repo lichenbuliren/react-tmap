@@ -1,4 +1,5 @@
 import React from 'react'
+import { isNull } from 'lodash'
 
 export default class Overlay extends React.Component {
   constructor (props) {
@@ -12,7 +13,7 @@ export default class Overlay extends React.Component {
   }
 
   destory () {
-    if (Object.prototype.toString.call(this.map) === '[object Null]' && this.container) {
+    if (isNull(this.map) && this.container) {
       this.destory()
     }
     this.container.parentNode.removeChild(this.container)
@@ -33,7 +34,7 @@ export default class Overlay extends React.Component {
 
   setMap (map) {
     this.map = map
-    if (Object.prototype.toString.call(map) === '[object Null]' && this.container) {
+    if (isNull(this.map) && this.container) {
       this.destory()
     }
   }
