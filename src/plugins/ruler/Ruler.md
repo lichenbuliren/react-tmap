@@ -2,7 +2,7 @@
 
 ## 目标
 
-![测试工具](../assets/rulers.png)
+![测试工具](/assets/rulers.png)
 
 
 ## 交互
