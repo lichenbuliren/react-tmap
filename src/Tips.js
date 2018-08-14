@@ -18,7 +18,11 @@ export default class Tips extends React.Component {
     showCloseIcon: false,
     onClose: () => {},
     onDestroy: () => {},
-    styles: {}
+    styles: {},
+    position: {
+      x: 0,
+      y: 0
+    }
   }
 
   componentWillUnmount () {
@@ -38,10 +42,12 @@ export default class Tips extends React.Component {
   }
 
   render () {
-    const { show, showCloseIcon, className, children, style } = this.props
+    const { show, showCloseIcon, className, children, style, position } = this.props
     const { style: defaultStyle } = this.state
     let _style = merge(defaultStyle, style)
     if (!show) _style.display = 'none'
+    _style.left = `${position.x}px`
+    _style.right = `${position.y}px`
 
     return (
       <div className={`tmap-tips ${className}`} style={_style} ref={node => { this.tipNode = node }}>
