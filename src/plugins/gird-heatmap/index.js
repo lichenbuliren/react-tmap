@@ -1,6 +1,6 @@
 /* global qq */
 import BaseLayer from './BaseLayer'
-import CanvasLayer from './CanvasLayer'
+import CanvasLayer from '../CanvasLayer'
 import DataSet from '../../data/DataSet'
 import { clear } from '../../utils'
 import { gradient } from '../../config'
