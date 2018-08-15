@@ -2,14 +2,13 @@
 /**
  * @author kyle / http://nikai.us/
  */
-
-import DataSet from '../data/DataSet'
-import TWEEN from '../utils/Tween'
-import Intensity from '../utils/data-range/Intensity'
-import Category from '../utils/data-range/Category'
-import Choropleth from '../utils/data-range/Choropleth'
-import drawGrid from '../utils/grid'
-import pathSimple from '../canvas/path/simple'
+import DataSet from '../../data/DataSet'
+import TWEEN from '../../utils/Tween'
+import Intensity from '../../utils/data-range/Intensity'
+import Category from '../../utils/data-range/Category'
+import Choropleth from '../../utils/data-range/Choropleth'
+import drawGrid from '../../utils/grid'
+import pathSimple from '../../canvas/path/simple'
 
 if (typeof window !== 'undefined') {
   requestAnimationFrame(animate)

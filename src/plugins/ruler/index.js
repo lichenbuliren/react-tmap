@@ -2,6 +2,7 @@
 import React from 'react'
 import CanvasLayer from '../CanvasLayer'
 import Circle from '../../Circle'
+// import Overlay from '../../Overlay'
 
 export default class Ruler extends React.Component {
   static defaultProps = {
@@ -12,15 +13,17 @@ export default class Ruler extends React.Component {
       y: 0
     },
     // 原点背景色颜色
-    dotBorderColor: 'red',
+    dotStrokeColor: 'red',
     dotRadius: 10,
     // 原点描边类型 solid || dash
-    dotStrokeStyle: 'solid',
+    dotStrokeDashStyle: 'solid',
     // 测距线宽度
-    strokeWidth: '1',
+    dotStrokeWeight: '1',
     // 原点背景色颜色
-    dotBgColor: '#fff',
-    strokeColor: 'red',
+    dotFillColor: '#fff',
+    lineStrokeColor: 'red',
+    lineStrokeDashStyle: 'solid',
+    lineStrokeWeight: '1',
     // 点击新增测距点
     onClick: () => {},
     // 双击完成测距
@@ -37,7 +40,7 @@ export default class Ruler extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      paths: []
+      results: []
     }
   }
 
@@ -45,12 +48,25 @@ export default class Ruler extends React.Component {
     this.initialize()
   }
 
-  get _paths () {
-    const { paths } = this.state
-    return paths.map((path, i) => {
-      const { dots } = path
-      return new qq.maps.LatLng(dots)
-    })
+  get circleOptions () {
+    const { dotStrokeColor: strokeColor, dotStrokeDashStyle: strokeDashStyle, dotStrokeWeight: strokeWeight, dotRadius: radius } = this.props
+    return {
+      strokeColor,
+      strokeWeight,
+      radius,
+      strokeDashStyle
+    }
+  }
+
+  get overlayOptions () {
+    const { tipsOffset: offset } = this.props
+    return {
+      offset,
+      style: {
+        border: '1px solid #000',
+        boxShadow: '2px 2px 4px 2px rgba(0, 0, 0, 0.2)'
+      }
+    }
   }
 
   initialize = () => {
@@ -118,14 +134,24 @@ export default class Ruler extends React.Component {
   }
 
   render () {
-    const { paths } = this.state
-    const { dotRadius } = this.props
+    const { results } = this.state
     return (
       <div className='ruler-container'>
-        {paths.map((path, i) => {
+        {results.map((path, i) => {
           // 绘制定点 dots
-          const { dots: { lat, lng } } = path
-          return <Circle center={{ lat, lng }} radius={dotRadius} />
+          const { dots } = path
+          return (
+            <React.Fragment>
+              {dots.map((dot, i) => {
+                const { lat, lng } = dot
+                return (
+                  <React.Fragment>
+                    <Circle center={{ lat, lng }} {...this.circleOptions} />
+                  </React.Fragment>
+                )
+              })}
+            </React.Fragment>
+          )
         })}
       </div>
     )
